@@ -177,14 +177,14 @@ class RandomIteratorSelector:
 
     def _select_iterator(self):
         """Selects an iterator based on updated probabilities."""
-        print("Len iterators: ", len(self.iterators))
+        # print("Len iterators: ", len(self.iterators))
         selected_index = random.choices(range(len(self.iterators)), weights=self.probabilities, k=1)[0]
         return selected_index
 
     def enumerate_from_random_iterator(self, start=0):
         """Enumerates from a randomly selected iterator for a specific GPU."""
         selected_index = self._select_iterator()
-        print("selected_index: ", selected_index)
+        # print("selected_index: ", selected_index)
 
         selected_iterator = self.iterators[selected_index]
         for step, inputs in enumerate(selected_iterator, start=start):
