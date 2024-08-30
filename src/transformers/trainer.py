@@ -2258,7 +2258,8 @@ class Trainer:
             print("Before selector")
             selector = RandomIteratorSelector(self.dataloaders, self.probabilities)
 
-            for step, inputs,selected_index in selector.enumerate_from_random_iterator():
+            if True:
+                step, inputs,selected_index = selector.enumerate_from_random_iterator()
                 total_batched_samples += 1
 
                 if self.args.include_num_input_tokens_seen:
