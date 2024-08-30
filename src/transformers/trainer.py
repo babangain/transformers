@@ -54,7 +54,7 @@ from huggingface_hub import ModelCard, create_repo, upload_folder
 from packaging import version
 from torch import nn
 from torch.utils.data import DataLoader, Dataset, IterableDataset, RandomSampler, SequentialSampler
-
+import random
 from . import __version__
 from .configuration_utils import PretrainedConfig
 from .data.data_collator import DataCollator, DataCollatorWithPadding, default_data_collator
@@ -174,6 +174,21 @@ from .utils import (
     strtobool,
 )
 from .utils.quantization_config import QuantizationMethod
+
+class RandomIteratorSelector:
+    def __init__(self, iterators, probabilities):
+        self.iterators = iterators
+        self.probabilities = probabilities
+
+    def _select_iterator(self):
+        """Selects an iterator based on updated probabilities."""
+        return random.choices(self.iterators, weights=self.probabilities, k=1)[0]
+
+    def enumerate_from_random_iterator(self, start=0):
+        """Enumerates from a randomly selected iterator."""
+        selected_iterator = self._select_iterator()
+        for step, inputs in enumerate(selected_iterator, start=start):
+            yield step, inputs
 
 
 DEFAULT_CALLBACKS = [DefaultFlowCallback]
@@ -2286,7 +2301,9 @@ class Trainer:
                 rng_to_sync = True
 
             step = -1
-            for step, inputs in enumerate(epoch_iterator):
+            selector = RandomIteratorSelector(self.dataloaders, self.probabilities)
+
+            for step, inputs in selector.enumerate_from_random_iterator():
                 total_batched_samples += 1
 
                 if self.args.include_num_input_tokens_seen:
