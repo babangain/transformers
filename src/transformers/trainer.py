@@ -2254,7 +2254,7 @@ class Trainer:
                 rng_to_sync = True
 
             step = -1
-ß
+
             print("Before selector")
             selector = RandomIteratorSelector(self.dataloaders, self.probabilities)
 
