@@ -177,7 +177,7 @@ class RandomIteratorSelector:
 
     def _select_iterator(self):
         """Selects an iterator based on updated probabilities."""
-        print(len(self.iterators))
+        print("Len iterators: ", len(self.iterators))
         selected_index = random.choices(range(len(self.iterators)), weights=self.probabilities, k=1)[0]
         return selected_index
 
@@ -2224,6 +2224,7 @@ class Trainer:
             self._evaluate(trial, ignore_keys_for_eval, skip_scheduler=True)
 
         total_batched_samples = 0
+        print("Outside epoch in range")
         for epoch in range(epochs_trained, num_train_epochs):
             epoch_iterator = train_dataloader
             if hasattr(epoch_iterator, "set_epoch"):
@@ -2252,6 +2253,8 @@ class Trainer:
                 rng_to_sync = True
 
             step = -1
+
+            print("Before selector")
             selector = RandomIteratorSelector(self.dataloaders, self.probabilities)
 
             for step, inputs,selected_index in selector.enumerate_from_random_iterator():
