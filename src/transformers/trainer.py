@@ -170,25 +170,31 @@ from .utils import (
 from .utils.quantization_config import QuantizationMethod
 
 import random
+
 class RandomIteratorSelector:
     def __init__(self, iterators, probabilities):
         self.iterators = iterators
         self.probabilities = probabilities
+        # Initialize the position for each iterator
+        self.iterator_positions = [0] * len(iterators)
 
     def _select_iterator(self):
         """Selects an iterator based on updated probabilities."""
-        # print("Len iterators: ", len(self.iterators))
         selected_index = random.choices(range(len(self.iterators)), weights=self.probabilities, k=1)[0]
         return selected_index
 
-    def enumerate_from_random_iterator(self, start=0):
+    def enumerate_from_random_iterator(self):
         """Enumerates from a randomly selected iterator for a specific GPU."""
         selected_index = self._select_iterator()
-        # print("selected_index: ", selected_index)
 
         selected_iterator = self.iterators[selected_index]
-        for step, inputs in enumerate(selected_iterator, start=start):
-            yield step, inputs,selected_index
+        start_position = self.iterator_positions[selected_index]
+
+        for step, inputs in enumerate(selected_iterator, start=start_position):
+            # Update the position of the selected iterator
+            self.iterator_positions[selected_index] = step + 1
+            yield step, inputs, selected_index
+
 
 DEFAULT_CALLBACKS = [DefaultFlowCallback]
 DEFAULT_PROGRESS_CALLBACK = ProgressCallback
