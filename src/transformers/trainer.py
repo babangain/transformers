@@ -2255,7 +2255,8 @@ class Trainer:
 
             for step, inputs,selected_index in selector.enumerate_from_random_iterator():
                 gpu_id = dist.get_rank() if dist.is_initialized() else 0
-                self.selected_bucket_current_fwd_pass[gpu_id] = selected_index                total_batched_samples += 1
+                self.selected_bucket_current_fwd_pass[gpu_id] = selected_index                
+                total_batched_samples += 1
 
                 if self.args.include_num_input_tokens_seen:
                     main_input_name = getattr(self.model, "main_input_name", "input_ids")
