@@ -177,6 +177,7 @@ class RandomIteratorSelector:
 
     def _select_iterator(self):
         """Selects an iterator based on updated probabilities."""
+        print(len(self.iterators))
         selected_index = random.choices(range(len(self.iterators)), weights=self.probabilities, k=1)[0]
         return selected_index
 
