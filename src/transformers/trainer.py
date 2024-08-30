@@ -2259,7 +2259,6 @@ class Trainer:
             selector = RandomIteratorSelector(self.dataloaders, self.probabilities)
 
             for step, inputs,selected_index in selector.enumerate_from_random_iterator():
-                self.selected_bucket_current_fwd_pass[gpu_id] = selected_index                
                 total_batched_samples += 1
 
                 if self.args.include_num_input_tokens_seen:
