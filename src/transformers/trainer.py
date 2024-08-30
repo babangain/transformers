@@ -2254,12 +2254,13 @@ class Trainer:
                 rng_to_sync = True
 
             step = -1
-
+ß
             print("Before selector")
             selector = RandomIteratorSelector(self.dataloaders, self.probabilities)
 
             if True:
-                step, inputs,selected_index = selector.enumerate_from_random_iterator()
+                print(selector.enumerate_from_random_iterator())
+                step, inputs,selected_index = x
                 total_batched_samples += 1
 
                 if self.args.include_num_input_tokens_seen:
