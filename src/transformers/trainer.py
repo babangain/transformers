@@ -2258,8 +2258,9 @@ class Trainer:
             print("Before selector")
             selector = RandomIteratorSelector(self.dataloaders, self.probabilities)
 
-            if True:
+            for s in range(steps_in_epoch):
                 step, inputs,selected_index = next(selector.enumerate_from_random_iterator())
+                step = s
                 total_batched_samples += 1
 
                 if self.args.include_num_input_tokens_seen:
