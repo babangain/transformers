@@ -184,6 +184,7 @@ class RandomIteratorSelector:
     def enumerate_from_random_iterator(self, start=0):
         """Enumerates from a randomly selected iterator for a specific GPU."""
         selected_index = self._select_iterator()
+        print("selected_index: ", selected_index)
 
         selected_iterator = self.iterators[selected_index]
         for step, inputs in enumerate(selected_iterator, start=start):
@@ -2303,6 +2304,7 @@ class Trainer:
 
                 with self.accelerator.accumulate(model):
                     tr_loss_step = self.training_step(model, inputs)
+                    self.losses_current_step[selected_index].append(tr_loss_step)
 
                 if (
                     args.logging_nan_inf_filter
