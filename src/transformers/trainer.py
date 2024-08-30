@@ -174,29 +174,21 @@ class RandomIteratorSelector:
     def __init__(self, iterators, probabilities):
         self.iterators = iterators
         self.probabilities = probabilities
-        self.iterator_states = {i: iter(it) for i, it in enumerate(iterators)}
 
     def _select_iterator(self):
         """Selects an iterator based on updated probabilities."""
+        print("Len iterators: ", len(self.iterators))
         selected_index = random.choices(range(len(self.iterators)), weights=self.probabilities, k=1)[0]
         return selected_index
 
-    def enumerate_from_random_iterator(self):
+    def enumerate_from_random_iterator(self, start=0):
         """Enumerates from a randomly selected iterator for a specific GPU."""
         selected_index = self._select_iterator()
-        selected_iterator = self.iterator_states[selected_index]
+        print("selected_index: ", selected_index)
 
-        step = 0
-        while True:
-            try:
-                inputs = next(selected_iterator)
-                yield step, inputs, selected_index
-                step += 1
-            except StopIteration:
-                # Once the iterator is exhausted, reset it or stop iteration
-                self.iterator_states[selected_index] = iter(self.iterators[selected_index])
-                continue
-
+        selected_iterator = self.iterators[selected_index]
+        for step, inputs in enumerate(selected_iterator, start=start):
+            yield step, inputs,selected_index
 
 DEFAULT_CALLBACKS = [DefaultFlowCallback]
 DEFAULT_PROGRESS_CALLBACK = ProgressCallback
@@ -2266,10 +2258,8 @@ class Trainer:
             print("Before selector")
             selector = RandomIteratorSelector(self.dataloaders, self.probabilities)
 
-            while True:
-                step, inputs,selected_index = selector.enumerate_from_random_iterator()
-                if step >= steps_in_epoch:
-                    break
+            for step, inputs,selected_index in selector.enumerate_from_random_iterator():
+                self.selected_bucket_current_fwd_pass[gpu_id] = selected_index                
                 total_batched_samples += 1
 
                 if self.args.include_num_input_tokens_seen:
