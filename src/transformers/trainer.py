@@ -207,6 +207,38 @@ import random
 #             print("Sampled Input: ", sample_data)
 #             yield sample_index, sample_data, selected_index
 
+# import random
+
+# class RandomIteratorSelector:
+#     def __init__(self, iterators, probabilities, seed=None):
+#         self.iterators = iterators
+#         self.probabilities = probabilities
+#         self.seed = seed
+
+    # def _select_iterator(self, rng):
+    #     """Selects an iterator based on updated probabilities using a specific RNG."""
+    #     selected_index = rng.choices(range(len(self.iterators)), weights=self.probabilities, k=1)[0]
+    #     return selected_index
+
+    # def enumerate_from_random_iterator(self, probabilities, gpu_id):
+    #     """Enumerates from a randomly selected iterator for a specific GPU."""
+    #     self.probabilities = probabilities
+
+    #     # Create a separate random number generator for each GPU
+    #     rng = random.Random(self.seed + gpu_id) if self.seed is not None else random.Random()
+
+    #     selected_index = self._select_iterator(rng)
+    #     selected_iterator = self.iterators[selected_index]
+
+    #     while True:
+    #         # Randomly sample an index from the iterator using the GPU-specific RNG
+    #         sample_index = rng.randint(0, len(selected_iterator) - 1)
+    #         sample_data = selected_iterator[sample_index]
+
+    #         print(f"GPU {gpu_id} - Sampled index: {sample_index} from selected iterator number: {selected_index}")
+    #         print(f"Sampled Input: {sample_data}")
+    #         yield sample_index, sample_data, selected_index
+
 import random
 
 class RandomIteratorSelector:
@@ -230,10 +262,13 @@ class RandomIteratorSelector:
         selected_index = self._select_iterator(rng)
         selected_iterator = self.iterators[selected_index]
 
+        # Convert the iterator to a list of data samples for random sampling
+        data_list = list(selected_iterator) #Inefficient, need to find better ways
+
         while True:
-            # Randomly sample an index from the iterator using the GPU-specific RNG
-            sample_index = rng.randint(0, len(selected_iterator) - 1)
-            sample_data = selected_iterator[sample_index]
+            # Randomly sample an index within the iterator using the GPU-specific RNG
+            sample_index = rng.randint(0, len(data_list) - 1)
+            sample_data = data_list[sample_index]
 
             print(f"GPU {gpu_id} - Sampled index: {sample_index} from selected iterator number: {selected_index}")
             print(f"Sampled Input: {sample_data}")
