@@ -277,8 +277,8 @@ class RandomIteratorSelector:
             sample_index = rng.randint(0, len(selected_data_list) - 1)
             sample_data = selected_data_list[sample_index]
 
-            print(f"GPU {gpu_id} - Sampled index: {sample_index} from selected iterator number: {selected_index}")
-            print(f"Sampled Input: {sample_data}")
+            # print(f"GPU {gpu_id} - Sampled index: {sample_index} from selected iterator number: {selected_index}")
+            # print(f"Sampled Input: {sample_data}")
             yield sample_index, sample_data, selected_index
 
 
