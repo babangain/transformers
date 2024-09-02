@@ -195,7 +195,8 @@ class RandomIteratorSelector:
         for step, inputs in enumerate(selected_iterator, start=start_position):
             # Update the position of the selected iterator
             self.iterator_positions[selected_index] = step + 1
-            print("Step inside random iterator: ", step)
+            print("Step inside random iterator: ", step, " from selected iterator number: ", selected_index)
+            print("Input: ", inputs)
             yield step, inputs, selected_index
 
 
