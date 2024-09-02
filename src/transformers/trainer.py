@@ -171,31 +171,6 @@ from .utils.quantization_config import QuantizationMethod
 
 import random
 
-class RandomIteratorSelector:
-    def __init__(self, iterators, probabilities):
-        self.iterators = iterators
-        self.probabilities = probabilities
-
-    def _select_iterator(self):
-        """Selects an iterator based on updated probabilities."""
-        selected_index = random.choices(range(len(self.iterators)), weights=self.probabilities, k=1)[0]
-        return selected_index
-
-    def enumerate_from_random_iterator(self, probabilities):
-        """Enumerates from a randomly selected iterator for a specific GPU."""
-        self.probabilities = probabilities
-
-        selected_index = self._select_iterator()
-
-        # Create a fresh iterator from the selected dataloader
-        selected_iterator = iter(self.iterators[selected_index])
-
-        for step, inputs in enumerate(selected_iterator):
-            print("Step inside random iterator: ", step, " from selected iterator number: ", selected_index)
-            print("Input: ", inputs)
-            yield step, inputs, selected_index
-
-            
 # class RandomIteratorSelector:
 #     def __init__(self, iterators, probabilities):
 #         self.iterators = iterators
@@ -215,14 +190,56 @@ class RandomIteratorSelector:
 #         selected_index = self._select_iterator()
 
 #         selected_iterator = self.iterators[selected_index]
-#         start_position = self.iterator_positions[selected_index]
+#         # start_position = self.iterator_positions[selected_index]
 
-#         for step, inputs in enumerate(selected_iterator, start=start_position):
-#             # Update the position of the selected iterator
-#             self.iterator_positions[selected_index] = step + 1
-#             print("Step inside random iterator: ", step, " from selected iterator number: ", selected_index)
-#             print("Input: ", inputs)
-#             yield step, inputs, selected_index
+#         # for step, inputs in enumerate(selected_iterator, start=start_position):
+#         #     # Update the position of the selected iterator
+#         #     self.iterator_positions[selected_index] = step + 1
+#         #     print("Step inside random iterator: ", step, " from selected iterator number: ", selected_index)
+#         #     print("Input: ", inputs)
+#         #     yield step, inputs, selected_index
+#         while True:
+#             # Randomly sample an index from the iterator
+#             sample_index = random.randint(0, len(selected_iterator) - 1)
+#             sample_data = selected_iterator[sample_index]
+
+#             print("Sampled index: ", sample_index, " from selected iterator number: ", selected_index)
+#             print("Sampled Input: ", sample_data)
+#             yield sample_index, sample_data, selected_index
+
+import random
+
+class RandomIteratorSelector:
+    def __init__(self, iterators, probabilities, seed=None):
+        self.iterators = iterators
+        self.probabilities = probabilities
+        self.seed = seed
+
+    def _select_iterator(self, rng):
+        """Selects an iterator based on updated probabilities using a specific RNG."""
+        selected_index = rng.choices(range(len(self.iterators)), weights=self.probabilities, k=1)[0]
+        return selected_index
+
+    def enumerate_from_random_iterator(self, probabilities, gpu_id):
+        """Enumerates from a randomly selected iterator for a specific GPU."""
+        self.probabilities = probabilities
+
+        # Create a separate random number generator for each GPU
+        rng = random.Random(self.seed + gpu_id) if self.seed is not None else random.Random()
+
+        selected_index = self._select_iterator(rng)
+        selected_iterator = self.iterators[selected_index]
+
+        while True:
+            # Randomly sample an index from the iterator using the GPU-specific RNG
+            sample_index = rng.randint(0, len(selected_iterator) - 1)
+            sample_data = selected_iterator[sample_index]
+
+            print(f"GPU {gpu_id} - Sampled index: {sample_index} from selected iterator number: {selected_index}")
+            print(f"Sampled Input: {sample_data}")
+            yield sample_index, sample_data, selected_index
+
+
 
 
 DEFAULT_CALLBACKS = [DefaultFlowCallback]
@@ -2291,10 +2308,10 @@ class Trainer:
             step = -1
 
             print("Before selector")
-            selector = RandomIteratorSelector(self.dataloaders, self.probabilities)
+            selector = RandomIteratorSelector(self.dataloaders, self.probabilities,seed=42)
 
             for s in range(steps_in_epoch):
-                step, inputs,selected_index = next(selector.enumerate_from_random_iterator(self.probabilities))
+                step, inputs,selected_index = next(selector.enumerate_from_random_iterator(self.probabilities),gpu_id = dist.get_rank() if dist.is_initialized() else 0)
                 step = s
                 total_batched_samples += 1
 
