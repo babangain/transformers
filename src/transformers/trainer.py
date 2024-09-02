@@ -175,8 +175,6 @@ class RandomIteratorSelector:
     def __init__(self, iterators, probabilities):
         self.iterators = iterators
         self.probabilities = probabilities
-        # Initialize the position for each iterator
-        self.iterator_positions = [0] * len(iterators)
 
     def _select_iterator(self):
         """Selects an iterator based on updated probabilities."""
@@ -189,15 +187,42 @@ class RandomIteratorSelector:
 
         selected_index = self._select_iterator()
 
-        selected_iterator = self.iterators[selected_index]
-        start_position = self.iterator_positions[selected_index]
+        # Create a fresh iterator from the selected dataloader
+        selected_iterator = iter(self.iterators[selected_index])
 
-        for step, inputs in enumerate(selected_iterator, start=start_position):
-            # Update the position of the selected iterator
-            self.iterator_positions[selected_index] = step + 1
+        for step, inputs in enumerate(selected_iterator):
             print("Step inside random iterator: ", step, " from selected iterator number: ", selected_index)
             print("Input: ", inputs)
             yield step, inputs, selected_index
+
+            
+# class RandomIteratorSelector:
+#     def __init__(self, iterators, probabilities):
+#         self.iterators = iterators
+#         self.probabilities = probabilities
+#         # Initialize the position for each iterator
+#         self.iterator_positions = [0] * len(iterators)
+
+#     def _select_iterator(self):
+#         """Selects an iterator based on updated probabilities."""
+#         selected_index = random.choices(range(len(self.iterators)), weights=self.probabilities, k=1)[0]
+#         return selected_index
+
+#     def enumerate_from_random_iterator(self, probabilities):
+#         """Enumerates from a randomly selected iterator for a specific GPU."""
+#         self.probabilities = probabilities
+
+#         selected_index = self._select_iterator()
+
+#         selected_iterator = self.iterators[selected_index]
+#         start_position = self.iterator_positions[selected_index]
+
+#         for step, inputs in enumerate(selected_iterator, start=start_position):
+#             # Update the position of the selected iterator
+#             self.iterator_positions[selected_index] = step + 1
+#             print("Step inside random iterator: ", step, " from selected iterator number: ", selected_index)
+#             print("Input: ", inputs)
+#             yield step, inputs, selected_index
 
 
 DEFAULT_CALLBACKS = [DefaultFlowCallback]
