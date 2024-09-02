@@ -183,8 +183,10 @@ class RandomIteratorSelector:
         selected_index = random.choices(range(len(self.iterators)), weights=self.probabilities, k=1)[0]
         return selected_index
 
-    def enumerate_from_random_iterator(self):
+    def enumerate_from_random_iterator(self, probabilities):
         """Enumerates from a randomly selected iterator for a specific GPU."""
+        self.probabilities = probabilities
+
         selected_index = self._select_iterator()
 
         selected_iterator = self.iterators[selected_index]
@@ -193,6 +195,7 @@ class RandomIteratorSelector:
         for step, inputs in enumerate(selected_iterator, start=start_position):
             # Update the position of the selected iterator
             self.iterator_positions[selected_index] = step + 1
+            print("Step inside random iterator: ", step)
             yield step, inputs, selected_index
 
 
@@ -2265,7 +2268,7 @@ class Trainer:
             selector = RandomIteratorSelector(self.dataloaders, self.probabilities)
 
             for s in range(steps_in_epoch):
-                step, inputs,selected_index = next(selector.enumerate_from_random_iterator())
+                step, inputs,selected_index = next(selector.enumerate_from_random_iterator(self.probabilities))
                 step = s
                 total_batched_samples += 1
 
