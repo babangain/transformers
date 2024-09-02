@@ -2311,7 +2311,7 @@ class Trainer:
             selector = RandomIteratorSelector(self.dataloaders, self.probabilities,seed=42)
 
             for s in range(steps_in_epoch):
-                step, inputs,selected_index = next(selector.enumerate_from_random_iterator(self.probabilities),gpu_id = dist.get_rank() if dist.is_initialized() else 0)
+                step, inputs,selected_index = next(selector.enumerate_from_random_iterator(self.probabilities,gpu_id = dist.get_rank() if dist.is_initialized() else 0))
                 step = s
                 total_batched_samples += 1
 
