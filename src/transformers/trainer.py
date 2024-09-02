@@ -239,6 +239,7 @@ import random
     #         print(f"Sampled Input: {sample_data}")
     #         yield sample_index, sample_data, selected_index
 
+
 import random
 
 class RandomIteratorSelector:
@@ -246,6 +247,16 @@ class RandomIteratorSelector:
         self.iterators = iterators
         self.probabilities = probabilities
         self.seed = seed
+        self.data_lists = self._create_data_lists()
+        # Initialize RNGs for each GPU
+        self.rngs = [random.Random(self.seed + gpu_id) if self.seed is not None else random.Random() for gpu_id in range(len(iterators))]
+
+    def _create_data_lists(self):
+        """Convert iterators to lists and store them."""
+        data_lists = []
+        for iterator in self.iterators:
+            data_lists.append(list(iterator))
+        return data_lists
 
     def _select_iterator(self, rng):
         """Selects an iterator based on updated probabilities using a specific RNG."""
@@ -256,19 +267,15 @@ class RandomIteratorSelector:
         """Enumerates from a randomly selected iterator for a specific GPU."""
         self.probabilities = probabilities
 
-        # Create a separate random number generator for each GPU
-        rng = random.Random(self.seed + gpu_id) if self.seed is not None else random.Random()
+        rng = self.rngs[gpu_id]  # Use the RNG specific to this GPU
 
         selected_index = self._select_iterator(rng)
-        selected_iterator = self.iterators[selected_index]
-
-        # Convert the iterator to a list of data samples for random sampling
-        data_list = list(selected_iterator) #Inefficient, need to find better ways
+        selected_data_list = self.data_lists[selected_index]
 
         while True:
-            # Randomly sample an index within the iterator using the GPU-specific RNG
-            sample_index = rng.randint(0, len(data_list) - 1)
-            sample_data = data_list[sample_index]
+            # Randomly sample an index within the data list using the GPU-specific RNG
+            sample_index = rng.randint(0, len(selected_data_list) - 1)
+            sample_data = selected_data_list[sample_index]
 
             print(f"GPU {gpu_id} - Sampled index: {sample_index} from selected iterator number: {selected_index}")
             print(f"Sampled Input: {sample_data}")
